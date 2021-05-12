@@ -47,59 +47,117 @@ file *addFile(struct folder *f1,string name,string auth,string cont){
     return f2;
 }
 
+constexpr unsigned int str2int(const char* str, int h = 0)
+{
+    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
+}
+
 int main(){
+    vector<string> dir;
+    int in,x;
+    string qt;
+    string nm,auth,content;
+    int v;
+    
     struct folder *root=new folder();
-    root->foldername="Root";
+    cout<<"Enter the name of the root folder\n";
+    cin>>nm;
+    root->foldername=nm;
     root->count=0;
     root->lastfolder=NULL;
     struct folder *p=root;
+
+    cout<<"1 mkdir disk : Creates a new Folder named disk "<<endl;
+    cout<<"2 new doc : Create a new File named doc"<<endl;
+    cout<<"3 cd .. 7 Go back"<<endl;
+    cout<<"3 cd <x>: Go inside Folder"<<endl;
+    cout<<"4 ls : Lists all the files inside the present directory"<<endl;
+    cout<<"5 read <x>: Open File"<<endl;
+    cout<<"6 rm -rf <x> Deleting a folder"<<endl;
+    cout<<"7 del <x> Deleting a file"<<endl;
+
+    dir.push_back(nm);
     while(true){
-        cout<<"=================================================================================\n";
-        cout<<"=================== Folders inside <<"<< p->foldername<<"========================\n";
-        for(int x=0;x<(p->nextfolder).size();x++){
-            cout<<(x)<<" "<<p->nextfolder[x]->foldername<<endl;
-        }
-        cout<<"=================================================================================\n";
-        cout<<"=================== Files inside <<"<< p->foldername<<"==========================\n";
-        for(int x=0;x<(p->nextfile).size();x++){
-            cout<<(x)<<" "<<p->nextfile[x]->filename<<endl;
-        }
-        cout<<"=================================================================================\n";
-        cout<<"=================================================================================\n";
-        cout<<"1: Create a new Folder"<<endl;
-        cout<<"2: Create a new File"<<endl;
-        cout<<"3 <x>: Go inside Folder"<<endl;
-        cout<<"4 <x>: Open File"<<endl;
-        cout<<"5 Go back"<<endl;
-        int v,in;
+        cout<<endl;
+        for(x=0;x<dir.size();x++)
+            cout<<dir[x]<<":\\> ";
+        
         cin>>v;
-        string nm,auth,content;
         switch(v){
             case 1:
-                cout<<"Enter name\n";
                 cin>>nm;
                 (p->nextfolder).push_back(addFolder(p,nm));
                 break;
             case 2:
-                cout<<"Enter name\n";
+                cin.ignore();
                 cin>>nm;
                 cout<<"Enter author\n";
-                cin>>auth;
+                cin.ignore();
+                getline(cin,auth);
                 cout<<"What would you like to write in the file\n";
-                cin>>content;
+                cin.ignore();
+                getline(cin,content);
                 (p->nextfile).push_back(addFile(p,nm,auth,content));
                 break;
             case 3:
-                cin>>in;
-                p=p->nextfolder[in];
+                cin>>qt;
+                if(qt==".."){
+                    p=p->lastfolder;
+                    dir.pop_back();
+                }
+                else{
+                    for(x=0;x<(p->nextfolder).size();x++){
+                        if(qt==(p->nextfolder[x])->foldername){
+                            p=p->nextfolder[x];
+                            dir.push_back(p->foldername);
+                            break;
+                        }
+                    }
+                }
                 break;
             case 4:
-                cin>>in;
-                cout<<"Showing File content...\n";
-                cout<<p->nextfile[in]->author;
+                for(x=0;x<(p->nextfolder).size();x++)
+                    cout<<(x)<<" "<<p->nextfolder[x]->foldername<<endl;
+                for(x=0;x<(p->nextfile).size();x++)
+                    cout<<(x)<<" "<<p->nextfile[x]->filename<<endl;
                 break;
             case 5:
-                p=p->lastfolder;
+                cin>>qt;
+                cout<<"Showing File content...\n";
+                for(x=0;x<(p->nextfile).size();x++){
+                    if(p->nextfile[x]->filename==qt){
+                        cout<<"Author: "<<p->nextfile[x]->author<<endl;
+                        cout<<"Content: "<<p->nextfile[x]->content<<endl;
+                        break;
+                    }
+                }
+                break;
+            case 6:
+                cin>>qt;
+                if(qt!="-rf"){
+                    cin>>qt;
+                    cout<<"Please check your command and try again\n";
+                    break;
+                }
+                cin>>qt;
+                for(x=0;x<(p->nextfolder).size();x++){
+                    if(qt==p->nextfolder[x]->foldername){
+                        (p->nextfolder).erase((p->nextfolder).begin()+x);
+                        break;
+                    }
+                }
+                break;
+            case 7:
+                cin>>qt;
+                for(x=0;x<(p->nextfile).size();x++){
+                    if(qt==p->nextfile[x]->filename){
+                        (p->nextfile).erase((p->nextfile).begin()+x);
+                        break;
+                    }
+                }
+                break;
+            default:
+                cout<<"Command match not found\n";
                 break;
         } 
     }
