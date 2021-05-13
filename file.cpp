@@ -46,12 +46,6 @@ file *addFile(struct folder *f1,string name,string auth,string cont){
 
     return f2;
 }
-
-constexpr unsigned int str2int(const char* str, int h = 0)
-{
-    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
-}
-
 int main(){
     vector<string> dir;
     int in,x;
