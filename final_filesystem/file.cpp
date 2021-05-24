@@ -17,6 +17,7 @@ struct file{
 struct folder{
     string foldername;
     string date;
+	string password;
 
     int count;
     vector<folder *> nextfolder;
@@ -24,11 +25,12 @@ struct folder{
     struct folder* lastfolder;
 };
 
-folder *addFolder(struct folder *f1,string name){
+folder *addFolder(struct folder *f1,string name,string pass){
     folder *f2=new folder;
     f2->foldername=name;
     f2->count=0;
     f2->lastfolder=f1;
+	f2->password=pass;
 
     time_t t;
     struct tm * tt;
@@ -100,6 +102,7 @@ int main(){
     cout<<setw(20)<<left<<"cd .."<<"to go back\n";
     cout<<setw(20)<<left<<"ls"<<"to list all the contents of the directory\n";
     cout<<setw(20)<<left<<"read"<<"to read the contents of the file\n";
+	cout<<setw(20)<<left<<"fileinfo"<<"to display the details of the file\n";
     cout<<setw(20)<<left<<"rm -rf"<<"to remove the folder\n";
     cout<<setw(20)<<left<<"del"<<"to delete the file\n";
     cout<<setw(20)<<left<<"exit"<<"to exit the file system\n";
@@ -120,17 +123,28 @@ int main(){
             
             //1. mkdir: used for making a new directory at the current path
             
-                if(v=="mkdir"){
+            if(v=="mkdir"){
                 
 		        //cout<<"Enter directory name:";
+				string pass;
 		        cin>>nm;
-		        (p->nextfolder).push_back(addFolder(p,nm));
-		        
-                }
+				
+				cout<<"Would you like to protect the directory using a password ?\n";
+				cin>>pass;
+
+				if(pass=="YES" || pass=="Yes" || pass=="yes" || pass=="Y"){
+					cout<<"Enter password\n";
+					cin.ignore();
+                	getline(cin,pass);
+					(p->nextfolder).push_back(addFolder(p,nm,pass));
+				}else{
+					(p->nextfolder).push_back(addFolder(p,nm,""));
+				}
+            }
                 
             //2. create file: creates a new file takes in author name and enables to write content
             
-                else if(v=="create"){
+            else if(v=="create"){
                 
                 	
 		        cin>>nm;
@@ -159,11 +173,11 @@ int main(){
 		        enc_perm = encryptString(perm,key);
 		        
 		        (p->nextfile).push_back(addFile(p,nm,enc_auth,enc_content,enc_type,enc_perm));
-                }
+            }
                 
             //3. cd .. to go back in path
             
-                else if(v=="cd"){
+            else if(v=="cd"){
                 
 		        cin>>qt;
 		        if(qt==".."){
@@ -173,42 +187,58 @@ int main(){
 		        }
 		  
 		        else{
-		        
+					string pass;
 		            for(x=0;x<(p->nextfolder).size();x++){
-		                if(qt==(p->nextfolder[x])->foldername){
-		                    p=p->nextfolder[x];
-		                    dir.push_back(p->foldername);
-		                    break;
-		                }
-		            }
+		                if(qt==(p->nextfolder[x])->foldername && p->nextfolder[x]->password!=""){
+							cout<<"The folder is protected using a password. Please enter the password to go inside it\n";
+							cin.ignore();
+                			getline(cin,pass);
+							if(pass==p->nextfolder[x]->password){
+								p=p->nextfolder[x];
+								dir.push_back(p->foldername);
+								break;
+							}else{
+								cout<<"Wrong Password entered\n";
+								break;
+							}
+						}
+						else if(qt==(p->nextfolder[x])->foldername && p->nextfolder[x]->password==""){
+							p=p->nextfolder[x];
+		                	dir.push_back(p->foldername);
+		                	break;
+						}
+						if(x==(p->nextfolder).size())
+							cout<<"Directory not found\n";
+					}
+		                    
 		        }
-                }
+		    }
                 
             //4. ls command to display all content present in the current folder
             
-            	else if(v=="ls"){
+            else if(v=="ls"){
             	
             	//changing color to red bold
             	
             	printf("\033[0;34m");
-    		printf("\033[1m");
+    			printf("\033[1m");
     		
 		        for(x=0;x<(p->nextfolder).size();x++)
 		            cout<<setw(10)<<left<<" "<<p->nextfolder[x]->foldername<<endl;
-		printf("\033[0;31m");
-    		printf("\033[1m");
+				printf("\033[0;31m");
+    			printf("\033[1m");
     		            
 		        for(x=0;x<(p->nextfile).size();x++)
 		            cout<<setw(10)<<left<<" "<<p->nextfile[x]->filename<<endl;
 		            
-		printf("\033[0;39m");
-    		printf("\033[0m");
-                
-                }
+				printf("\033[0;39m");
+    			printf("\033[0m");
+            
+            }
                 
             //5. read command to read the contents of the file
             
-               else if(v=="read"){
+            else if(v=="read"){
                 
 		        cin>>qt;
 		        cout<<"Showing File content...\n";
@@ -225,13 +255,14 @@ int main(){
 		            if(p->nextfile[x]->filename==qt){
 		            
 		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
-		                cout<<"Content:\n\n "<<decryptString(p->nextfile[x]->content,keytoread)<<endl;
+		                cout<<"Content:\n\n"<<decryptString(p->nextfile[x]->content,keytoread)<<endl;
 		                break;
 		            }
 		        }
 		        
-                }
-                else if(v=="fileinfo"){
+            }
+            
+			else if(v=="fileinfo"){
                 	
 		        cin>>qt;
 		        cout<<"Showing File info\n\n";
@@ -254,11 +285,11 @@ int main(){
 		            }
 		        }
 		        
-                }
+            }
                 
             //6. rm -rf command to remove the folder 
             
-                else if(v=="rm"){
+            else if(v=="rm"){
                 
 		        cin>>qt;
 		        
@@ -268,7 +299,6 @@ int main(){
 		            break;
 		        }
 		        
-		        cout<<"Enter folder name: ";
 		        cin>>qt;
 		        for(x=0;x<(p->nextfolder).size();x++){
 		        
@@ -278,11 +308,11 @@ int main(){
 		                break;
 		            }
 		        }
-                }
+            }
                 
             //7. del command to delete the given file
             
-                else if(v=="del"){
+            else if(v=="del"){
                 
 		        cout<<"Enter file name: ";
 		        cin>>qt;
@@ -294,13 +324,13 @@ int main(){
 		                break;
 		            }
 		        }
-                }
+            }
                 
             //help command lists all the available commands
             
-                else if(v=="help"){
+            else if(v=="help"){
                 	
-                	printf("\033[0;96m");
+                printf("\033[0;96m");
      			printf("\033[1m");
 		        
 		        cout<<setw(20)<<left<<"help"<<"to display all the functions\n";
@@ -315,20 +345,19 @@ int main(){
 		        cout<<setw(20)<<left<<"exit"<<"to exit the file system\n";
 		        
 		                   
-			printf("\033[0;39m");
+				printf("\033[0;39m");
 	    		printf("\033[0m");
-		 }
+		 	}
                 
-                else if(v=="exit"){
+            else if(v=="exit"){
+            	break;
+            }
                 
-                	break;
-                }
-                
-                else{
-                
-                	cout<<"Command match not found\n";
-                	cout<<"Try 'help' command\n";
-                }
+            else{
+            
+				cout<<"Command match not found\n";
+            	cout<<"Try 'help' command\n";
+            }
                
         } 
 }
