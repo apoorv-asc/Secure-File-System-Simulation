@@ -302,11 +302,20 @@ int main(){
 		        cin>>qt;
 		        for(x=0;x<(p->nextfolder).size();x++){
 		        
-		            if(qt==p->nextfolder[x]->foldername){
-		            
-		                (p->nextfolder).erase((p->nextfolder).begin()+x);
+		            if(qt==p->nextfolder[x]->foldername && p->nextfolder[x]->password==""){
+		            	(p->nextfolder).erase((p->nextfolder).begin()+x);
 		                break;
-		            }
+		            }else{
+						cout<<"Enter password\n";
+						string pass;
+						cin.ignore();
+                		getline(cin,pass);
+						if(pass==p->nextfolder[x]->password)
+							(p->nextfolder).erase((p->nextfolder).begin()+x);
+						else
+							cout<<"Operation failed as you entered the wrong password\n";
+						break;
+					}
 		        }
             }
                 
@@ -319,7 +328,6 @@ int main(){
 		        for(x=0;x<(p->nextfile).size();x++){
 		        
 		            if(qt==p->nextfile[x]->filename){
-		            
 		                (p->nextfile).erase((p->nextfile).begin()+x);
 		                break;
 		            }
