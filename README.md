@@ -28,7 +28,7 @@ Secure-File-System-Simulation
 
 # Running the simulation
 
-    clone this [repo](https://github.com/apoorv-asc/Secure-File-System-Simulation)
+    clone this repo
     cd Secure-File-System-Simulation/final_filesystem
     g++ file.cpp -o file
     ./file
