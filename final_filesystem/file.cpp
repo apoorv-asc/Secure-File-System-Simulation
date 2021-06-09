@@ -79,7 +79,11 @@ int main(){
     string qt;
     string nm,auth,content,type;
     string enc_auth,enc_content,enc_type,enc_perm;
-    string v;
+    string new_content,enc_new_content;
+    string v,cont;
+    
+    string newname,newauth,newtype,newperm,newcontent;
+    string enc_newname,enc_newauth,enc_newtype,enc_newperm,enc_newcontent;
     
     struct folder *root=new folder();
     //cout<<"\nEnter the name of the root folder\n";
@@ -103,6 +107,8 @@ int main(){
     cout<<setw(20)<<left<<"ls"<<"to list all the contents of the directory\n";
     cout<<setw(20)<<left<<"read"<<"to read the contents of the file\n";
 	cout<<setw(20)<<left<<"fileinfo"<<"to display the details of the file\n";
+    cout<<setw(20)<<left<<"rename "<<"to rename a file\n";
+    cout<<setw(20)<<left<<"update"<<"to update /overwrite the file\n";
     cout<<setw(20)<<left<<"rm -rf"<<"to remove the folder\n";
     cout<<setw(20)<<left<<"del"<<"to delete the file\n";
     cout<<setw(20)<<left<<"exit"<<"to exit the file system\n";
@@ -129,7 +135,7 @@ int main(){
 				string pass;
 		        cin>>nm;
 				
-				cout<<"Would you like to protect the directory using a password ?\n";
+				cout<<"Would you like to protect the directory using a password ? y/n\n";
 				cin>>pass;
 
 				if(pass=="YES" || pass=="Yes" || pass=="yes" || pass=="Y"){
@@ -150,13 +156,15 @@ int main(){
 		        cin>>nm;
 		        
 		        string key;
-                	cout<<"*******This is a secure file system*****\n"<<endl;
+		        printf("\033[0;92m");
+                	cout<<"\n*******This is a secure file system*****\n"<<endl;
                 	cout<<"Please enter the 16-bit key: ";
                 	cin.ignore();
                 	getline(cin,key);
+                	printf("\033[0;39m");
 		        
 		        cout<<"Enter file type: \n";
-		        cin.ignore();
+		        cin.ignore(0);
 		        getline(cin,type);
 		        enc_type=encryptString(type,key);
 		        
@@ -173,6 +181,8 @@ int main(){
 		        enc_perm = encryptString(perm,key);
 		        
 		        (p->nextfile).push_back(addFile(p,nm,enc_auth,enc_content,enc_type,enc_perm));
+		        
+
             }
                 
             //3. cd .. to go back in path
@@ -190,7 +200,7 @@ int main(){
 					string pass;
 		            for(x=0;x<(p->nextfolder).size();x++){
 		                if(qt==(p->nextfolder[x])->foldername && p->nextfolder[x]->password!=""){
-							cout<<"The folder is protected using a password. Please enter the password to go inside it\n";
+							cout<<"The folder is protected using a password.\n Please enter the password to go inside it\n";
 							cin.ignore();
                 			getline(cin,pass);
 							if(pass==p->nextfolder[x]->password){
@@ -238,40 +248,18 @@ int main(){
                 
             //5. read command to read the contents of the file
             
-            else if(v=="read"){
-                
-		        cin>>qt;
-		        cout<<"Showing File content...\n";
-		        
-		        string keytoread;
-                	cout<<"*******This is a secure file system*****\n"<<endl;
-                	cout<<"Please enter the 16-bit key: ";
-                	cin.ignore();
-                	getline(cin,keytoread);
-		        
-		        
-		        for(x=0;x<(p->nextfile).size();x++){
-		        
-		            if(p->nextfile[x]->filename==qt){
-		            
-		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
-		                cout<<"Content:\n\n"<<decryptString(p->nextfile[x]->content,keytoread)<<endl;
-		                break;
-		            }
-		        }
-		        
-            }
-            
-			else if(v=="fileinfo"){
+            else if(v=="fileinfo"){
                 	
 		        cin>>qt;
 		        cout<<"Showing File info\n\n";
 		        
 		        string keytodecrypt;
-                	cout<<"*******This is a secure file system*****\n"<<endl;
+                	printf("\033[0;92m");
+                	cout<<"\n*******This is a secure file system*****\n"<<endl;
                 	cout<<"Please enter the 16-bit key: ";
                 	cin.ignore();
                 	getline(cin,keytodecrypt);
+                	printf("\033[0;39m");
 		        
 		        
 		        for(x=0;x<(p->nextfile).size();x++){
@@ -281,6 +269,173 @@ int main(){
 		                cout<<setw(10)<<left<<"Author: "<<decryptString(p->nextfile[x]->author,keytodecrypt)<<endl;
 		                cout<<setw(10)<<left<<"Permissions: "<<decryptString(p->nextfile[x]->permission,keytodecrypt)<<endl;
 		                cout<<setw(10)<<left<<"Type: "<<decryptString(p->nextfile[x]->type,keytodecrypt)<<endl;
+		                break;
+		            }
+		        }
+		        
+            }
+			
+            //rename
+            else if (v=="rename"){
+            
+            	cin>>qt;
+            	string newname;
+            	for(x=0;x<(p->nextfile).size();x++){
+		        
+		            if(p->nextfile[x]->filename==qt){
+		            
+		            	string keytoread;
+		        	printf("\033[0;92m");
+                		cout<<"\n*******This is a secure file system*****\n"<<endl;
+		        	cout<<"Please enter the 16-bit key: ";
+		        	cin.ignore();
+		        	getline(cin,keytoread);
+		        	printf("\033[0;39m");
+		            
+		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
+		                cout<<"Current file name: "<<p->nextfile[x]->filename<<endl;
+		                cout<<"Enter new file name: \n";
+		                cin.ignore();
+		                getline(cin,newname);
+		                p->nextfile[x]->filename = newname;
+		                break;
+		            }
+		        }
+            }
+            else if(v=="copy"){
+            	
+            	cin>>qt;
+            	for(x=0;x<(p->nextfile).size();x++){
+		        
+		            if(p->nextfile[x]->filename==qt){
+		            	
+		            		
+		            		string keytocopy;
+					printf("\033[0;92m");
+                			cout<<"\n*******This is a secure file system*****\n"<<endl;
+					cout<<"Please enter the 16-bit key of file to be copied: ";
+					cin.ignore();
+					getline(cin,keytocopy);
+					printf("\033[0;39m");
+					
+					cout<<"New filename: ";
+					cin.ignore();
+					getline(cin,newname);
+					
+					string newkey;
+					printf("\033[0;92m");
+               		 	cout<<"\n*******This is a secure file system*****\n"<<endl;
+					cout<<"Please enter the 16-bit key of newfile: ";
+					cin.ignore();
+					getline(cin,newkey);
+					printf("\033[0;39m");
+					
+					newauth = decryptString(p->nextfile[x]->author,keytocopy);
+					enc_newauth = encryptString(newauth,newkey);
+					
+					newperm = decryptString(p->nextfile[x]->permission,keytocopy);
+					enc_newperm = encryptString(newperm,newkey);
+					
+					newcontent= decryptString(p->nextfile[x]->content,keytocopy);
+					enc_newcontent = encryptString(newcontent,newkey);
+					
+					newtype = decryptString(p->nextfile[x]->type,keytocopy);
+					enc_newtype = encryptString(newtype,newkey);
+					
+					(p->nextfile).push_back(addFile(p,newname,enc_newauth,enc_newcontent,enc_newtype,enc_newperm));
+					break;
+		        
+		            	}
+		}
+            }
+            
+            //edit file contents
+            else if(v=="update"){
+            	
+            	cin>>qt;
+            	
+            	for(x=0;x<(p->nextfile).size();x++){
+		        
+		            if(p->nextfile[x]->filename==qt){
+		            	
+		            	string keytoupdate;
+		        	printf("\033[0;92m");
+                		cout<<"\n*******This is a secure file system*****\n"<<endl;
+		        	cout<<"Please enter the 16-bit key: ";
+		        	cin.ignore();
+		        	getline(cin,keytoupdate);
+		        	printf("\033[0;39m");
+		            
+		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
+		                string cont = decryptString(p->nextfile[x]->content,keytoupdate);
+		                cout<<"Current file content: "<<cont<<endl;
+		                cout<<"Enter the new content: \n";
+		
+		                cin.ignore();
+		                getline(cin,new_content);
+		                //newcontent = cont + " " + newcontent;
+		                
+		                cout<<"File content: \n"<<new_content;
+		                enc_new_content = encryptString(new_content,keytoupdate);
+
+		                p->nextfile[x]->content = enc_new_content;
+		                break;
+		            }
+		        }
+            
+            }/*
+            else if(v=="append"){
+            	
+            	cin>>qt;
+            	string appendcontent, enc_appendcontent;
+            	for(x=0;x<(p->nextfile).size();x++){
+		        
+		            if(p->nextfile[x]->filename==qt){
+		            	
+		            	string keytoupdate;
+		        	cout<<"*******This is a secure file system*****\n"<<endl;
+		        	cout<<"Please enter the 16-bit key: ";
+		        	cin.ignore();
+		        	getline(cin,keytoupdate);
+		            
+		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
+		                cont = decryptString(p->nextfile[x]->content,keytoupdate);
+		                cout<<"Current file content: "<<cont<<endl;
+		                cout<<"Enter content to append: \n";
+		
+		                cin.ignore();
+		                getline(cin,new_content);
+		                appendcontent = cont+appendcontent;
+		                
+		                cout<<"File content: \n"<<appendcontent;
+		                enc_appendcontent = encryptString(appendcontent,keytoupdate);
+
+		                p->nextfile[x]->content = enc_appendcontent;
+		                break;
+		            }
+		        }
+            
+            }*/
+            else if(v=="read"){
+                
+		        cin>>qt;
+		        cout<<"Showing File content...\n";
+		        
+		        string keytoread;
+                	printf("\033[0;92m");
+                	cout<<"\n*******This is a secure file system*****\n"<<endl;
+                	cout<<"Please enter the 16-bit key: ";
+                	cin.ignore();
+                	getline(cin,keytoread);
+                	printf("\033[0;39m");
+		        
+		        
+		        for(x=0;x<(p->nextfile).size();x++){
+		        
+		            if(p->nextfile[x]->filename==qt){
+		            
+		                //cout<<"Author: "<<p->nextfile[x]->author<<endl;
+		                cout<<"Content:\n\n"<<decryptString(p->nextfile[x]->content,keytoread)<<endl;
 		                break;
 		            }
 		        }
@@ -302,32 +457,41 @@ int main(){
 		        cin>>qt;
 		        for(x=0;x<(p->nextfolder).size();x++){
 		        
-		            if(qt==p->nextfolder[x]->foldername && p->nextfolder[x]->password==""){
-		            	(p->nextfolder).erase((p->nextfolder).begin()+x);
-		                break;
-		            }else{
-						cout<<"Enter password\n";
-						string pass;
-						cin.ignore();
-                		getline(cin,pass);
-						if(pass==p->nextfolder[x]->password)
-							(p->nextfolder).erase((p->nextfolder).begin()+x);
-						else
-							cout<<"Operation failed as you entered the wrong password\n";
-						break;
+		        	if(qt==p->nextfolder[x]->foldername && p->nextfolder[x]->password==""){
+		        		
+		        		(p->nextfolder).erase((p->nextfolder).begin()+x);
+		                	break;
+		        		
+		        	}
+		        	else{
+					cout<<"Enter password: ";
+					string pass;
+					cin.ignore();
+					getline(cin,pass);
+					
+					if(pass==p->nextfolder[x]->password){
+						
+						(p->nextfolder).erase((p->nextfolder).begin()+x);
 					}
-		        }
+					else{
+						cout<<"Operation failed!!! wrong password!!!\n";
+					}
+					break;
+				}
+			}
             }
                 
             //7. del command to delete the given file
             
             else if(v=="del"){
                 
-		        cout<<"Enter file name: ";
+	
 		        cin>>qt;
+		        
 		        for(x=0;x<(p->nextfile).size();x++){
 		        
 		            if(qt==p->nextfile[x]->filename){
+		            
 		                (p->nextfile).erase((p->nextfile).begin()+x);
 		                break;
 		            }
@@ -363,7 +527,7 @@ int main(){
                 
             else{
             
-				cout<<"Command match not found\n";
+		cout<<"Command match not found\n";
             	cout<<"Try 'help' command\n";
             }
                
